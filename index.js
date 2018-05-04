@@ -18,18 +18,23 @@ async function run() {
   const browser = await puppeteer.launch();
   const page = await browser.newPage();
 
+  console.log(`Running check ${new Date()} -----`);
   await page.goto('https://auth.tesla.com/login');
 
   await page.click(EMAIL_SELECTOR);
+  console.log('Entering email...');
   await page.keyboard.type(CREDENTIALS.username);
 
   await page.click(PASSWORD_SELECTOR);
+  console.log('Entering password...');
   await page.keyboard.type(CREDENTIALS.password);
 
+  console.log('Logging in!');
   await page.click(BUTTON_SELECTOR);
 
   await page.waitForNavigation();
 
+  console.log('Checking for VIN...');
   await page.waitForSelector(VIN_SECTION);
 
   const vinSection = await page.$(VIN_SECTION);
@@ -42,6 +47,7 @@ async function run() {
   // if it doesn't match it means that our reservation number on the page
   // has been replaced with the VIN
   if (!html.match(regex)) {
+    console.log('VIN found!!!');
     var p = new Push({
       user: CREDENTIALS.pushoverUser,
       token: CREDENTIALS.pushoverKey
@@ -57,6 +63,8 @@ async function run() {
     p.send(msg, function (err, result) {
       if (err) { throw err }
     })
+  } else {
+    console.log('No VIN yet :/');
   }
 
   browser.close();
